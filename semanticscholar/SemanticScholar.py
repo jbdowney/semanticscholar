@@ -215,6 +215,49 @@ class SemanticScholar():
 
         return results
 
+    def get_paper_authors_complete(
+            self,
+            paper_id: str,
+            fields: list = None,
+            limit: int = 100,
+            max_authors: int = None
+        ) -> List[Author]:
+        '''
+        Get complete list of a paper's authors without pagination.
+        This method handles pagination internally and returns all authors
+        up to an optional maximum.
+
+        :param str paper_id: S2PaperId, CorpusId, DOI, ArXivId, MAG, ACL, 
+               PMID, PMCID, or URL from:
+               - semanticscholar.org
+               - arxiv.org
+               - aclweb.org
+               - acm.org
+               - biorxiv.org
+        :param list fields: (optional) list of the fields to be returned for each author.
+        :param int limit: (optional) number of results to return per underlying API
+               call (page size). Must be <= 1000. Default is 100.
+        :param int max_authors: (optional) maximum total number of authors to return.
+               If None, all authors are returned.
+        :returns: List of :class:`semanticscholar.Author.Author` objects.
+        :rtype: :class:`List` of :class:`semanticscholar.Author.Author`
+        '''
+        all_authors = []
+        # The 'limit' passed to get_paper_authors here acts as the page size
+        # for the PaginatedResults object.
+        paginated_results = self.get_paper_authors(
+            paper_id=paper_id,
+            fields=fields,
+            limit=limit
+        )
+
+        for author_item in paginated_results:  # Iterating PaginatedResults handles fetching all pages
+            if max_authors is not None and len(all_authors) >= max_authors:
+                break  # Stop collecting once we've reached max_authors
+            all_authors.append(author_item)
+
+        return all_authors
+
     def get_paper_citations(
                 self,
                 paper_id: str,
