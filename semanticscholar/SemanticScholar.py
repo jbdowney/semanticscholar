@@ -444,24 +444,20 @@ class SemanticScholar():
                 limit: int = 100
             ) -> PaginatedResults:
         '''
-        Get details about a author's papers
+        Get details about an author's papers.
 
-        :calls: `POST /graph/v1/paper/{author_id}/papers \
-            <https://api.semanticscholar.org/api-docs/graph#tag/Paper-Data\
+        Returns a PaginatedResults object that allows iteration over all of an
+        author's papers. The 'limit' parameter controls how many results are
+        fetched per underlying API call (page size).
+
+        :calls: `GET /graph/v1/author/{author_id}/papers \
+            <https://api.semanticscholar.org/api-docs/graph#tag/Author-Data\
             /operation/get_graph_get_author_papers>`_
 
-        :param str paper_id: S2PaperId, CorpusId, DOI, ArXivId, MAG, ACL, 
-               PMID, PMCID, or URL from:
-
-               - semanticscholar.org
-               - arxiv.org
-               - aclweb.org
-               - acm.org
-               - biorxiv.org
-
+        :param str author_id: S2AuthorId.
         :param list fields: (optional) list of the fields to be returned.
-        :param int limit: (optional) maximum number of results to return 
-               (must be <= 1000).
+        :param int limit: (optional) number of results to return per page 
+               (must be <= 1000). Default is 100.
         '''
 
         loop = asyncio.get_event_loop()
