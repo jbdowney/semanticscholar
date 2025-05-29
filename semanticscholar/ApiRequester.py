@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time # Added for rate limit delay measurement
 import warnings
 from typing import List, Union
 
@@ -103,7 +104,12 @@ class ApiRequester:
         :rtype: :class:`dict` or :class:`List` of :class:`dict`
         '''
         if self._limiter:
+            start_time = time.monotonic()
             async with self._limiter:
+                end_time = time.monotonic()
+                delay_ms = (end_time - start_time) * 1000
+                if delay_ms > 10:
+                    logger.debug(f"Rate limit introduced delay of {int(delay_ms)}ms.")
                 if self.retry:
                     return await self._get_data_async(
                         url, parameters, headers, payload)
