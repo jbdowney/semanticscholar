@@ -10,3 +10,7 @@ docs/build/
 .devcontainer/
 .idea
 *.DS_Store
+
+# Ignore generated Sphinx documentation files
+docs/source/semanticscholar.rst
+docs/source/semanticscholar.*.rst

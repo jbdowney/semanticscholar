@@ -8,6 +8,8 @@ import httpx
 from tenacity import retry as rerun
 from tenacity import retry_if_exception_type, stop_after_attempt, wait_fixed
 
+from aiolimiter import AsyncLimiter # Added for throttling
+
 from semanticscholar.SemanticScholarException import (
     BadQueryParametersException, GatewayTimeoutException,
     InternalServerErrorException, ObjectNotFoundException)
@@ -17,14 +19,28 @@ logger = logging.getLogger('semanticscholar')
 
 class ApiRequester:
 
-    def __init__(self, timeout, retry: bool = True) -> None:
+    def __init__(self, timeout, retry: bool = True, requests_per_second: float = None) -> None: # Added requests_per_second
         '''
         :param float timeout: an exception is raised 
                if the server has not issued a response for timeout seconds.
         :param bool retry: enable retry mode.
+        :param float requests_per_second: (optional) maximum number of requests to make per second to the API.
         '''
         self.timeout = timeout
         self.retry = retry
+
+        self._limiter = None # Initialize limiter to None (off by default)
+        if requests_per_second is not None and requests_per_second > 0:
+            if requests_per_second >= 1.0:
+                # X requests per 1 second
+                rate = int(round(requests_per_second)) # aiolimiter expects int for rate
+                period = 1.0
+            else:
+                # 1 request per Y seconds (where Y = 1/requests_per_second)
+                rate = 1
+                period = 1.0 / requests_per_second
+            self._limiter = AsyncLimiter(rate, period)
+            logger.info(f"ApiRequester throttling enabled: {rate} request(s) per {period:.2f} second(s).")
 
     @property
     def timeout(self) -> int:
@@ -86,12 +102,24 @@ class ApiRequester:
         :returns: data or empty :class:`dict` if not found.
         :rtype: :class:`dict` or :class:`List` of :class:`dict`
         '''
-        if self.retry:
-            return await self._get_data_async(
-                url, parameters, headers, payload)
-        return await self._get_data_async.retry_with(
-                stop=stop_after_attempt(1)
-            )(self, url, parameters, headers, payload)
+        if self._limiter:
+            async with self._limiter:
+                if self.retry:
+                    return await self._get_data_async(
+                        url, parameters, headers, payload)
+                else:
+                    # If retry is False, call the underlying method directly
+                    return await self._get_data_async.retry_with(
+                            stop=stop_after_attempt(1)
+                        )(self, url, parameters, headers, payload)
+        else: # No limiter configured, proceed directly
+            if self.retry:
+                return await self._get_data_async(
+                    url, parameters, headers, payload)
+            else:
+                return await self._get_data_async.retry_with(
+                        stop=stop_after_attempt(1)
+                    )(self, url, parameters, headers, payload)
 
     @rerun(
         wait=wait_fixed(30),
@@ -156,8 +184,16 @@ class ApiRequester:
             DeprecationWarning
             )
 
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(
+        # Ensure an event loop is available for the current thread
+        try:
+            loop = asyncio.get_event_loop_policy().get_event_loop()
+            if loop.is_closed(): # Check if the current loop is closed
+                raise RuntimeError("Current event loop is closed.")
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        return loop.run_until_complete(
             self.get_data_async(
                 url=url,
                 parameters=parameters,

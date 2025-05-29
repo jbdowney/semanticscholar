@@ -23,6 +23,7 @@ class SemanticScholar():
                 api_url: str = None,
                 debug: bool = False,
                 retry: bool = True,
+                requests_per_second: float = None, # Added requests_per_second
             ) -> None:
         '''
         :param float timeout: (optional) an exception is raised
@@ -31,6 +32,7 @@ class SemanticScholar():
         :param str api_url: (optional) custom API url.
         :param bool debug: (optional) enable debug mode.
         :param bool retry: enable retry mode.
+        :param float requests_per_second: (optional) maximum number of requests to make per second to the API.
         '''
         nest_asyncio.apply()
         self._timeout = timeout
@@ -40,7 +42,8 @@ class SemanticScholar():
             api_key=api_key,
             api_url=api_url,
             debug=debug,
-            retry=retry
+            retry=retry,
+            requests_per_second=requests_per_second # Pass to AsyncSemanticScholar
         )
         self.debug = debug
 

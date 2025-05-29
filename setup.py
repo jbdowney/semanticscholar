@@ -10,7 +10,7 @@ long_description = re.sub(r'\[\]\(https?://[^\)]+\)\n?', '', long_description)
 
 setup(
     name='semanticscholar',
-    version='0.10.0',
+    version='0.10.1',
     description='Unofficial Python client library for Semantic Scholar APIs.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -20,7 +20,7 @@ setup(
     license='MIT',
     packages=['semanticscholar'],
     python_requires='>=3.8',
-    install_requires=['tenacity', 'httpx', 'nest_asyncio'],
+    install_requires=['tenacity', 'httpx', 'nest_asyncio', 'aiolimiter'],
     test_suite='tests',
     tests_require=['vcrpy'],
     classifiers=[

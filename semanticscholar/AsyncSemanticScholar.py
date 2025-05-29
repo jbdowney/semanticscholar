@@ -34,6 +34,7 @@ class AsyncSemanticScholar:
                 api_url: str = None,
                 debug: bool = False,
                 retry: bool = True,
+                requests_per_second: float = None, # Added requests_per_second
             ) -> None:
         '''
         :param float timeout: (optional) an exception is raised
@@ -42,6 +43,7 @@ class AsyncSemanticScholar:
         :param str api_url: (optional) custom API url.
         :param bool debug: (optional) enable debug mode.
         :param bool retry: enable retry mode.
+        :param float requests_per_second: (optional) maximum number of requests to make per second to the API.
         '''
 
         if debug:
@@ -60,7 +62,11 @@ class AsyncSemanticScholar:
 
         self._timeout = timeout
         self._retry = retry
-        self._requester = ApiRequester(self._timeout, self._retry)
+        self._requester = ApiRequester(
+            self._timeout,
+            self._retry,
+            requests_per_second=requests_per_second # Pass to ApiRequester
+        )
         self.debug = debug
 
     @property
