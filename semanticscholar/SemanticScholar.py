@@ -502,6 +502,82 @@ class SemanticScholar():
         )
 
         return results
+        
+    def search_paper_complete(
+            self,
+            query: str,
+            year: str = None,
+            publication_types: list = None,
+            open_access_pdf: bool = None,
+            venue: list = None,
+            fields_of_study: list = None,
+            fields: list = None,
+            publication_date_or_year: str = None,
+            min_citation_count: int = None,
+            limit: int = 100,
+            bulk: bool = False,
+            sort: str = None,
+            max_papers: int = None
+        ) -> List[Paper]:
+        '''
+        Search for papers by keyword and get complete list of results without pagination.
+        This method handles pagination internally and returns all matching papers
+        up to an optional maximum. Paper relevance search is the default behavior.
+        Bulk retrieval instead returns up to 10,000,000 results (1,000 in each page).
+
+        :param str query: plain-text search query string.
+        :param str year: (optional) restrict results to the given range of 
+               publication year.
+        :param list publication_type: (optional) restrict results to the given 
+               publication type list.
+        :param bool open_access_pdf: (optional) restrict results to papers 
+               with public PDFs.
+        :param list venue: (optional) restrict results to the given venue list.
+        :param list fields_of_study: (optional) restrict results to given 
+               field-of-study list, using the s2FieldsOfStudy paper field.
+        :param list fields: (optional) list of the fields to be returned.
+        :param str publication_date_or_year: (optional) restrict results to 
+               the given range of publication date in the format 
+               <start_date>:<end_date>, where dates are in the format 
+               YYYY-MM-DD, YYYY-MM, or YYYY.
+        :param int min_citation_count: (optional) restrict results to papers 
+               with at least the given number of citations.
+        :param int limit: (optional) number of results to return per underlying API
+               call (page size). Must be <= 100 for regular search or <= 1000 for bulk.
+        :param bool bulk: (optional) bulk retrieval of basic paper data 
+               without search relevance.
+        :param str sort: (optional) sorts results (only if bulk=True) using 
+               <field>:<order> format, where "field" is either paperId, 
+               publicationDate, or citationCount, and "order" is asc 
+               (ascending) or desc (descending).
+        :param int max_papers: (optional) maximum total number of papers to return.
+               If None, all matching papers are returned.
+        :returns: List of :class:`semanticscholar.Paper.Paper` objects.
+        :rtype: :class:`List` of :class:`semanticscholar.Paper.Paper`
+        '''
+        all_papers = []
+        paginated_results = self.search_paper(
+            query=query,
+            year=year,
+            publication_types=publication_types,
+            open_access_pdf=open_access_pdf,
+            venue=venue,
+            fields_of_study=fields_of_study,
+            fields=fields,
+            publication_date_or_year=publication_date_or_year,
+            min_citation_count=min_citation_count,
+            limit=limit,
+            bulk=bulk,
+            sort=sort,
+            match_title=False
+        )
+
+        for paper_item in paginated_results:
+            if max_papers is not None and len(all_papers) >= max_papers:
+                break
+            all_papers.append(paper_item)
+
+        return all_papers
 
     def get_author(
                 self,
@@ -666,6 +742,41 @@ class SemanticScholar():
         )
 
         return results
+        
+    def search_author_complete(
+            self,
+            query: str,
+            fields: list = None,
+            limit: int = 100,
+            max_authors: int = None
+        ) -> List[Author]:
+        '''
+        Get complete list of authors matching a search query without pagination.
+        This method handles pagination internally and returns all matching authors
+        up to an optional maximum.
+
+        :param str query: plain-text search query string.
+        :param list fields: (optional) list of the fields to be returned.
+        :param int limit: (optional) number of results to return per underlying API
+               call (page size). Must be <= 1000. Default is 100.
+        :param int max_authors: (optional) maximum total number of authors to return.
+               If None, all matching authors are returned.
+        :returns: List of :class:`semanticscholar.Author.Author` objects.
+        :rtype: :class:`List` of :class:`semanticscholar.Author.Author`
+        '''
+        all_authors = []
+        paginated_results = self.search_author(
+            query=query,
+            fields=fields,
+            limit=limit
+        )
+
+        for author_item in paginated_results:
+            if max_authors is not None and len(all_authors) >= max_authors:
+                break
+            all_authors.append(author_item)
+
+        return all_authors
 
     def get_recommended_papers(
                 self,
