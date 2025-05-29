@@ -138,9 +138,9 @@ class ApiRequester:
         method = 'POST' if payload else 'GET'
 
         logger.debug(f'HTTP Request: {method} {url}')
-        logger.debug(f'Headers: {headers}')
-        logger.debug(f'Payload: {payload}')
-        logger.debug(f'cURL command: {self._curl_cmd(url, method, headers, payload)}')
+        ##logger.debug(f'Headers: {headers}')
+        ##logger.debug(f'Payload: {payload}')
+        ##logger.debug(f'cURL command: {self._curl_cmd(url, method, headers, payload)}')
 
         async with httpx.AsyncClient() as client:
             r = await client.request(
@@ -153,19 +153,25 @@ class ApiRequester:
             if len(data) == 1 and 'error' in data:
                 data = {}
         elif r.status_code == 400:
+            logger.debug('RESPONSE 400')
             data = r.json()
             raise BadQueryParametersException(data['error'])
         elif r.status_code == 403:
+            logger.debug('RESPONSE 403')
             raise PermissionError('HTTP status 403 Forbidden.')
         elif r.status_code == 404:
+            logger.debug('RESPONSE 404')
             data = r.json()
             raise ObjectNotFoundException(data['error'])
         elif r.status_code == 429:
+            logger.debug('RESPONSE 429')
             raise ConnectionRefusedError('HTTP status 429 Too Many Requests.')
         elif r.status_code == 500:
+            logger.debug('RESPONSE 500')
             data = r.json()
             raise InternalServerErrorException(data['message'])
         elif r.status_code == 504:
+            logger.debug('RESPONSE 504')
             data = r.json()
             raise GatewayTimeoutException(data['message'])
 
