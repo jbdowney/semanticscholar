@@ -7,6 +7,7 @@ from semanticscholar.AsyncSemanticScholar import AsyncSemanticScholar
 from semanticscholar.Author import Author
 from semanticscholar.Paper import Paper
 from semanticscholar.Autocomplete import Autocomplete
+from semanticscholar.Citation import Citation
 
 
 class SemanticScholar():
@@ -259,11 +260,11 @@ class SemanticScholar():
         return all_authors
 
     def get_paper_citations(
-                self,
-                paper_id: str,
-                fields: list = None,
-                limit: int = 100
-            ) -> PaginatedResults:
+            self,
+            paper_id: str,
+            fields: list = None,
+            limit: int = 100
+        ) -> PaginatedResults:
         '''
         Get details about a paper's citations
 
@@ -295,6 +296,47 @@ class SemanticScholar():
         )
 
         return results
+
+    def get_paper_citations_complete(
+            self,
+            paper_id: str,
+            fields: list = None,
+            limit: int = 100,
+            max_citations: int = None
+        ) -> List[Citation]:
+        '''
+        Get complete list of a paper's citations without pagination.
+        This method handles pagination internally and returns all citations
+        up to an optional maximum.
+
+        :param str paper_id: S2PaperId, CorpusId, DOI, ArXivId, MAG, ACL, 
+               PMID, PMCID, or URL from:
+               - semanticscholar.org
+               - arxiv.org
+               - aclweb.org
+               - acm.org
+               - biorxiv.org
+        :param list fields: (optional) list of the fields to be returned for each citation.
+        :param int limit: (optional) number of results to return per underlying API
+               call (page size). Must be <= 1000. Default is 100.
+        :param int max_citations: (optional) maximum total number of citations to return.
+               If None, all citations are returned.
+        :returns: List of :class:`semanticscholar.Citation.Citation` objects.
+        :rtype: :class:`List` of :class:`semanticscholar.Citation.Citation`
+        '''
+        all_citations = []
+        paginated_results = self.get_paper_citations(
+            paper_id=paper_id,
+            fields=fields,
+            limit=limit
+        )
+
+        for citation_item in paginated_results:
+            if max_citations is not None and len(all_citations) >= max_citations:
+                break
+            all_citations.append(citation_item)
+
+        return all_citations
 
     def get_paper_references(
                 self,
