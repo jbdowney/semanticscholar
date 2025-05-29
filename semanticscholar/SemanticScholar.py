@@ -8,6 +8,7 @@ from semanticscholar.Author import Author
 from semanticscholar.Paper import Paper
 from semanticscholar.Autocomplete import Autocomplete
 from semanticscholar.Citation import Citation
+from semanticscholar.Reference import Reference
 
 
 class SemanticScholar():
@@ -339,11 +340,11 @@ class SemanticScholar():
         return all_citations
 
     def get_paper_references(
-                self,
-                paper_id: str,
-                fields: list = None,
-                limit: int = 100
-            ) -> PaginatedResults:
+            self,
+            paper_id: str,
+            fields: list = None,
+            limit: int = 100
+        ) -> PaginatedResults:
         '''
         Get details about a paper's references
 
@@ -375,6 +376,47 @@ class SemanticScholar():
         )
 
         return results
+
+    def get_paper_references_complete(
+            self,
+            paper_id: str,
+            fields: list = None,
+            limit: int = 100,
+            max_references: int = None
+        ) -> List[Reference]:
+        '''
+        Get complete list of a paper's references without pagination.
+        This method handles pagination internally and returns all references
+        up to an optional maximum.
+
+        :param str paper_id: S2PaperId, CorpusId, DOI, ArXivId, MAG, ACL, 
+               PMID, PMCID, or URL from:
+               - semanticscholar.org
+               - arxiv.org
+               - aclweb.org
+               - acm.org
+               - biorxiv.org
+        :param list fields: (optional) list of the fields to be returned for each reference.
+        :param int limit: (optional) number of results to return per underlying API
+               call (page size). Must be <= 1000. Default is 100.
+        :param int max_references: (optional) maximum total number of references to return.
+               If None, all references are returned.
+        :returns: List of :class:`semanticscholar.Reference.Reference` objects.
+        :rtype: :class:`List` of :class:`semanticscholar.Reference.Reference`
+        '''
+        all_references = []
+        paginated_results = self.get_paper_references(
+            paper_id=paper_id,
+            fields=fields,
+            limit=limit
+        )
+
+        for reference_item in paginated_results:
+            if max_references is not None and len(all_references) >= max_references:
+                break
+            all_references.append(reference_item)
+
+        return all_references
 
     def search_paper(
                 self,
