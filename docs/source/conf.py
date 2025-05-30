@@ -11,6 +11,7 @@ import re
 import sys
 import glob
 import pypandoc
+import toml
 
 sys.path.append(os.path.join(os.getcwd(), '../..'))
 
@@ -57,10 +58,12 @@ project = 'semanticscholar'
 copyright = f'{datetime.date.today().year}, Daniel Silva'
 author = 'Daniel Silva'
 
-# Get release version from setup.py
-with open('../../setup.py', 'r') as setup_file:
-    setup_contents = setup_file.read()
-release = re.search(r"version=['\"]([^'\"]+)['\"]", setup_contents).group(1)
+# Get release version from pyproject.toml
+# Assumes conf.py is in docs/source/
+pyproject_path = os.path.join(os.path.dirname(__file__), '..', '..', 'pyproject.toml')
+with open(pyproject_path, 'r') as f:
+    pyproject_data = toml.load(f)
+release = pyproject_data['tool']['poetry']['version']
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

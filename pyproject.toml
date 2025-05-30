@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "semanticscholar"
+version = "0.10.3"
+description = "Unofficial Python client library for Semantic Scholar APIs."
+authors = ["Daniel Silva <danielnsilva@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "http://danielnsilva.com/semanticscholar"
+repository = "https://github.com/danielnsilva/semanticscholar" # Assuming this is the repo, update if different
+keywords = ["semantic scholar", "api", "nlp", "academic papers"] # Added some likely keywords
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+packages = [{ include = "semanticscholar" }]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+tenacity = "*" # You can pin versions like tenacity = "^9.1.2" if needed
+httpx = "*"
+nest-asyncio = "*" # Poetry normalizes names, e.g., nest_asyncio -> nest-asyncio
+aiolimiter = "*"
+
+[tool.poetry.group.dev.dependencies]
+# General development tools
+pytest = "*" # Common test runner, add if you use it
+
+[tool.poetry.group.test.dependencies]
+vcrpy = "*"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "*"
+m2r2 = "*"
+furo = "*"
+pypandoc-binary = "*"
+sphinx-copybutton = "*"
+toml = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
